@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+
+using Elements.Core;
 
 using FrooxEngine;
 using FrooxEngine.CommonAvatar;
@@ -17,6 +20,9 @@ public class AvatarModuleInjector : ResoniteMod {
 	
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<Uri?> MODULE_RESDB = new("moduleResdb", "Module resdb", () => null);
+	
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY = new("dummy", "Dummy", () => new dummy());
 	
 	private static ModConfiguration? _config;
 
@@ -42,8 +48,20 @@ public class AvatarModuleInjector : ResoniteMod {
 			if (__instance.Node.Value != BodyNode.Root) return;
 			var moduleUri = _config?.GetValue(MODULE_RESDB);
 			if (moduleUri == null) return;
+
+			World? world = null;
+			if (__instance is IWorldElement iWorldElementInstance) {
+				world = iWorldElementInstance.World;
+			}
+			if (world == null) return;
+			UserRoot userRoot = world.LocalUser.Root;
 			
 			var avatar = __instance.Equipped.Target.Slot;
+
+			if (avatar.Name == "Dummy Head") return;
+
+			var oldMarker = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
+			if (oldMarker.Count != 0) return;
 			
 			var olds = avatar.GetChildrenWithTag("__AMI_CONTAINER");
 			foreach (Slot slot in olds)
@@ -53,10 +71,29 @@ public class AvatarModuleInjector : ResoniteMod {
 			
 			var container = avatar.AddSlot("__AMI_CONTAINER", false);
 			container.Tag = "__AMI_CONTAINER";
+			var processingMarker = avatar.AddSlot("__AMI_PROCESSING_MARKER", false);
+			processingMarker.Tag = "__AMI_PROCESSING_MARKER";
 			var module = container.AddSlot("__AMI_MODULE");
 			module.StartTask(async delegate {
 				await module.LoadObjectAsync(moduleUri);
 				module = module.GetComponent<InventoryItem>()?.Unpack() ?? module;
+				world.RunInUpdates(1, delegate {
+					AvatarManager avatarManager = userRoot.GetRegisteredComponent<AvatarManager>();
+
+					var dummyHead = world.LocalUserSpace.AddSlot("Dummy Head", false);
+					dummyHead.AttachComponent<AvatarPoseNode>().Node.Value = BodyNode.Head;
+					dummyHead.AttachComponent<AvatarDestroyOnDequip>();
+					avatarManager.Equip(dummyHead);
+					avatarManager.Equip(avatar);
+
+					world.RunInUpdates(2, delegate {
+						var markers = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
+						foreach (Slot marker in markers)
+						{
+							marker.Destroy();
+						}
+					});
+				});
 			});
 		}
 	}
