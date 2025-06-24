@@ -2,7 +2,7 @@
 
 A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod for [Resonite](https://resonite.com/) that inject object to the avatar when equip.
 
-Highly recommend use with [ResoniteModSetting](https://github.com/badhaloninja/ResoniteModSetting).
+Highly recommend use with [ResoniteModSettings](https://github.com/badhaloninja/ResoniteModSettings).
 
 ## Installation
 1. Install [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader).
