@@ -1,12 +1,6 @@
 # AvatarModuleInjector
 
 A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod for [Resonite](https://resonite.com/) that inject object to the avatar when equip.
-<!-- Edit to describe what your mod does and what it may solve -->
-<!-- If your mod solves an issue, you should link to any relevant issues on the resonite github -->
-
-
-## Screenshots
-<!-- If your mod has visible effects in the game, attach some images or video of it in-use here! Otherwise remove this section -->
 
 ## Installation
 1. Install [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader).
