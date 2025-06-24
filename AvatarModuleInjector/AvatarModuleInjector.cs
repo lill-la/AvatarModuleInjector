@@ -51,7 +51,7 @@ public class AvatarModuleInjector : ResoniteMod {
 				slot.Destroy();
 			}
 			
-			var container = avatar.AddSlot("__AMI_CONTAINER");
+			var container = avatar.AddSlot("__AMI_CONTAINER", false);
 			container.Tag = "__AMI_CONTAINER";
 			var module = container.AddSlot("__AMI_MODULE");
 			module.StartTask(async delegate {
