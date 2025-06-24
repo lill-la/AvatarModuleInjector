@@ -17,25 +17,107 @@ public class AvatarModuleInjector : ResoniteMod {
 	public override string Author => "lill";
 	public override string Version => VERSION_CONSTANT;
 	public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
-	
+
 	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_RESDB = new("moduleResdb", "Module resdb", () => null);
-	
+	private static readonly ModConfigurationKey<string?> MODULE_00_NAME =
+		new("module00Name", "Module 00 name", () => null);
+
 	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<dummy> DUMMY = new("dummy", "Dummy", () => new dummy());
-	
+	private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
+		new("module00Resdb", "Module 00 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_01_NAME =
+		new("module01Name", "Module 01 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
+		new("module01Resdb", "Module 01 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_02_NAME =
+		new("module02Name", "Module 02 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
+		new("module02Resdb", "Module 02 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_03_NAME =
+		new("module03Name", "Module 03 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
+		new("module03Resdb", "Module 03 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_04_NAME =
+		new("module04Name", "Module 04 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
+		new("module04Resdb", "Module 04 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_05_NAME =
+		new("module05Name", "Module 05 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
+		new("module05Resdb", "Module 05 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_05 = new("dummy05", "-----", () => new dummy());
+
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_06_NAME =
+		new("module06Name", "Module 06 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
+		new("module06Resdb", "Module 06 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<string?> MODULE_07_NAME =
+		new("module07Name", "Module 07 name", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
+		new("module07Resdb", "Module 07 resdb", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_07 = new("dummy07", "-----", () => new dummy());
+
 	private static ModConfiguration? _config;
 
 	public override void OnEngineInit() {
 		_config = GetConfiguration();
-		
+
 		Harmony harmony = new Harmony("la.lill.AvatarModuleInjector");
 		harmony.PatchAll();
 	}
-	
+
 	[HarmonyPatch]
 	class AvatarObjectSlotPatch {
-
 		[HarmonyReversePatch]
 		[HarmonyPatch(typeof(ComponentBase<Component>), "OnChanges")]
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -46,53 +128,82 @@ public class AvatarModuleInjector : ResoniteMod {
 			OnChangesBase(__instance);
 			if (!__instance.IsUnderLocalUser) return;
 			if (__instance.Node.Value != BodyNode.Root) return;
-			var moduleUri = _config?.GetValue(MODULE_RESDB);
-			if (moduleUri == null) return;
 
 			World? world = null;
 			if (__instance is IWorldElement iWorldElementInstance) {
 				world = iWorldElementInstance.World;
 			}
+
 			if (world == null) return;
 			UserRoot userRoot = world.LocalUser.Root;
-			
+
 			var avatar = __instance.Equipped.Target.Slot;
 
 			if (avatar.Name == "Dummy Head") return;
 
 			var oldMarker = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
 			if (oldMarker.Count != 0) return;
-			
+
 			var olds = avatar.GetChildrenWithTag("__AMI_CONTAINER");
-			foreach (Slot slot in olds)
-			{
+			foreach (Slot slot in olds) {
 				slot.Destroy();
 			}
-			
+
 			var container = avatar.AddSlot("__AMI_CONTAINER", false);
 			container.Tag = "__AMI_CONTAINER";
 			var processingMarker = avatar.AddSlot("__AMI_PROCESSING_MARKER", false);
 			processingMarker.Tag = "__AMI_PROCESSING_MARKER";
-			var module = container.AddSlot("__AMI_MODULE");
-			module.StartTask(async delegate {
-				await module.LoadObjectAsync(moduleUri);
-				module = module.GetComponent<InventoryItem>()?.Unpack() ?? module;
-				world.RunInUpdates(1, delegate {
-					AvatarManager avatarManager = userRoot.GetRegisteredComponent<AvatarManager>();
+			List<Uri?> moduleUriList = new() {
+				_config?.GetValue(MODULE_00_RESDB),
+				_config?.GetValue(MODULE_01_RESDB),
+				_config?.GetValue(MODULE_02_RESDB),
+				_config?.GetValue(MODULE_03_RESDB),
+				_config?.GetValue(MODULE_04_RESDB),
+				_config?.GetValue(MODULE_05_RESDB),
+				_config?.GetValue(MODULE_06_RESDB),
+				_config?.GetValue(MODULE_07_RESDB),
+			};
 
-					var dummyHead = world.LocalUserSpace.AddSlot("Dummy Head", false);
-					dummyHead.AttachComponent<AvatarPoseNode>().Node.Value = BodyNode.Head;
-					dummyHead.AttachComponent<AvatarDestroyOnDequip>();
-					avatarManager.Equip(dummyHead);
-					avatarManager.Equip(avatar);
+			List<string?> moduleNameList = new() {
+				_config?.GetValue(MODULE_00_NAME),
+				_config?.GetValue(MODULE_01_NAME),
+				_config?.GetValue(MODULE_02_NAME),
+				_config?.GetValue(MODULE_03_NAME),
+				_config?.GetValue(MODULE_04_NAME),
+				_config?.GetValue(MODULE_05_NAME),
+				_config?.GetValue(MODULE_06_NAME),
+				_config?.GetValue(MODULE_07_NAME),
+			};
 
-					world.RunInUpdates(2, delegate {
-						var markers = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
-						foreach (Slot marker in markers)
-						{
-							marker.Destroy();
-						}
+			for (var i = 0; i < moduleUriList.Count; i++) {
+				var moduleUri = moduleUriList[i];
+				if (moduleUri != null) {
+					var moduleName = moduleNameList[i];
+					var moduleContainer = container.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
+					var moduleSlot = moduleContainer.AddSlot($"__AMI_MODULE_{i:D2}");
+					world.RunInUpdates(i + 1, delegate {
+						moduleContainer.StartTask(async delegate {
+							await moduleSlot.LoadObjectAsync(moduleUri);
+							moduleSlot.GetComponent<InventoryItem>().Unpack();
+						});
 					});
+				}
+			}
+
+			world.RunInUpdates(moduleUriList.Count + 2, delegate {
+				AvatarManager avatarManager = userRoot.GetRegisteredComponent<AvatarManager>();
+
+				var dummyHead = world.LocalUserSpace.AddSlot("Dummy Head", false);
+				dummyHead.AttachComponent<AvatarPoseNode>().Node.Value = BodyNode.Head;
+				dummyHead.AttachComponent<AvatarDestroyOnDequip>();
+				avatarManager.Equip(dummyHead);
+				avatarManager.Equip(avatar);
+
+				world.RunInUpdates(2, delegate {
+					var markers = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
+					foreach (Slot marker in markers) {
+						marker.Destroy();
+					}
 				});
 			});
 		}
