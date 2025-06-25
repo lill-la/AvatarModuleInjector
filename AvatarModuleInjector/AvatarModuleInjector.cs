@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 using Elements.Core;
 
@@ -8,9 +7,11 @@ using FrooxEngine;
 using FrooxEngine.CommonAvatar;
 
 using HarmonyLib;
+
 using ResoniteModLoader;
 
 namespace AvatarModuleInjector;
+
 public class AvatarModuleInjector : ResoniteMod {
 	internal const string VERSION_CONSTANT = "0.2.0";
 	public override string Name => "AvatarModuleInjector";
@@ -18,96 +19,82 @@ public class AvatarModuleInjector : ResoniteMod {
 	public override string Version => VERSION_CONSTANT;
 	public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_00_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_00_NAME =
 		new("module00Name", "Module 00 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
 		new("module00Resdb", "Module 00 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_01_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_01_NAME =
 		new("module01Name", "Module 01 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
 		new("module01Resdb", "Module 01 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_02_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_02_NAME =
 		new("module02Name", "Module 02 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
 		new("module02Resdb", "Module 02 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_03_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_03_NAME =
 		new("module03Name", "Module 03 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
 		new("module03Resdb", "Module 03 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_04_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_04_NAME =
 		new("module04Name", "Module 04 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
 		new("module04Resdb", "Module 04 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_05_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_05_NAME =
 		new("module05Name", "Module 05 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
 		new("module05Resdb", "Module 05 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_05 = new("dummy05", "-----", () => new dummy());
 
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_06_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_06_NAME =
 		new("module06Name", "Module 06 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
 		new("module06Resdb", "Module 06 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<string?> MODULE_07_NAME =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_07_NAME =
 		new("module07Name", "Module 07 name", () => null);
 
-	[AutoRegisterConfigKey]
-	private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
 		new("module07Resdb", "Module 07 resdb", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_07 = new("dummy07", "-----", () => new dummy());
 
 	private static ModConfiguration? _config;
+
+	private static Dictionary<RefID, Slot> avatars = new();
 
 	public override void OnEngineInit() {
 		_config = GetConfiguration();
@@ -116,28 +103,43 @@ public class AvatarModuleInjector : ResoniteMod {
 		harmony.PatchAll();
 	}
 
-	[HarmonyPatch]
-	class AvatarObjectSlotPatch {
-		[HarmonyReversePatch]
-		[HarmonyPatch(typeof(ComponentBase<Component>), "OnChanges")]
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static void OnChangesBase(AvatarObjectSlot instance) { }
+	[HarmonyPatch(typeof(ComponentBase<Component>), "OnStart")]
+	class ComponentBase_OnStart_Patch {
+		static void Postfix(FrooxEngine.Component __instance) {
+			if (!(__instance is AvatarObjectSlot)) return;
+			if ((__instance.Slot?.ActiveUser?.IsLocalUser ?? false) &&
+			    (__instance.Slot.Name?.StartsWith("User") ?? false)) {
+				if (__instance is AvatarObjectSlot avatarObjSlot) {
+					avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
+					__instance.Disposing += Worker_Disposing;
+					Msg($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
+				}
+			}
+		}
 
-		[HarmonyPatch(typeof(AvatarObjectSlot), "OnChanges"), HarmonyPrefix]
-		static void InternalRunUpdatePrefix(AvatarObjectSlot __instance) {
-			OnChangesBase(__instance);
-			if (!__instance.IsUnderLocalUser) return;
-			if (__instance.Node.Value != BodyNode.Root) return;
+		private static void Worker_Disposing(Worker obj) {
+			avatars.Remove(obj.ReferenceID);
+			Msg($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
+		}
 
-			World? world = null;
-			if (__instance is IWorldElement iWorldElementInstance) {
-				world = iWorldElementInstance.World;
+		private static void Equipped_OnTargetChange(SyncRef<IAvatarObject> avatarObj) {
+			if (avatarObj?.Target?.Node != BodyNode.Root) return;
+			if (avatars.TryGetValue(avatarObj.Worker.ReferenceID, out var oldAvatar)) {
+				if (!(oldAvatar is null)) {
+					Msg($"Avatar DeEquip : {oldAvatar.Name}");
+					avatars[avatarObj.Worker.ReferenceID] = null!;
+				}
 			}
 
-			if (world == null) return;
-			UserRoot userRoot = world.LocalUser.Root;
+			if (avatarObj.State == ReferenceState.Available) {
+				Msg($"Avatar Equip : {avatarObj.Target.Slot.Name}");
+				InjectModules(avatarObj.Target.Slot);
+				avatars[avatarObj.Worker.ReferenceID] = avatarObj.Target.Slot;
+			}
+		}
 
-			var avatar = __instance.Equipped.Target.Slot;
+		private static void InjectModules(Slot avatar) {
+			World world = avatar.World;
 
 			if (avatar.Name == "Dummy Head") return;
 
@@ -191,7 +193,7 @@ public class AvatarModuleInjector : ResoniteMod {
 			}
 
 			world.RunInUpdates(moduleUriList.Count + 2, delegate {
-				AvatarManager avatarManager = userRoot.GetRegisteredComponent<AvatarManager>();
+				AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
 				var dummyHead = world.LocalUserSpace.AddSlot("Dummy Head", false);
 				dummyHead.AttachComponent<AvatarPoseNode>().Node.Value = BodyNode.Head;
