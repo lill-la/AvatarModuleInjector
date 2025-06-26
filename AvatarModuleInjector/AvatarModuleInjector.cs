@@ -235,6 +235,7 @@ public class AvatarModuleInjector : ResoniteMod {
 			for (var i = 0; i < moduleUriList.Count; i++) {
 				var moduleUri = moduleUriList[i];
 				var moduleName = moduleNameList[i];
+				if (String.IsNullOrWhiteSpace(moduleName)) moduleName = null;
 				var moduleIsUserScale = moduleIsUserScaleList[i];
 				
 				if (moduleUri == null) continue;
