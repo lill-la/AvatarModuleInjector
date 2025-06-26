@@ -19,11 +19,17 @@ public class AvatarModuleInjector : ResoniteMod {
 	public override string Version => VERSION_CONSTANT;
 	public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> AUTO_EXCLUDE = new("AutoExclude", "If a slot with the same name as ModuleName exists directly under ExcludeSlot, it will be excluded.", () => false);
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> EXCLUDE_SLOT = new("ExcludeSlot", "Exclude slot name under avatar root. (Setting null will search directly under the avatar root)", () => null);
+
+	[AutoRegisterConfigKey]
+	private static readonly ModConfigurationKey<dummy> DUMMY_EXCLUDE = new("dummyExclude", "-----", () => new dummy());
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_00_NAME =
 		new("module00Name", "Module 00 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
-		new("module00Resdb", "Module 00 resdb", () => null);
+		new("module00Resrec", "Module 00 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
@@ -32,7 +38,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module01Name", "Module 01 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
-		new("module01Resdb", "Module 01 resdb", () => null);
+		new("module01Resrec", "Module 01 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
@@ -41,7 +47,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module02Name", "Module 02 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
-		new("module02Resdb", "Module 02 resdb", () => null);
+		new("module02Resrec", "Module 02 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
@@ -50,7 +56,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module03Name", "Module 03 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
-		new("module03Resdb", "Module 03 resdb", () => null);
+		new("module03Resrec", "Module 03 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
@@ -59,7 +65,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module04Name", "Module 04 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
-		new("module04Resdb", "Module 04 resdb", () => null);
+		new("module04Resrec", "Module 04 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
@@ -68,7 +74,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module05Name", "Module 05 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
-		new("module05Resdb", "Module 05 resdb", () => null);
+		new("module05Resrec", "Module 05 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_05 = new("dummy05", "-----", () => new dummy());
@@ -78,7 +84,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module06Name", "Module 06 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
-		new("module06Resdb", "Module 06 resdb", () => null);
+		new("module06Resrec", "Module 06 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
@@ -87,7 +93,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		new("module07Name", "Module 07 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
-		new("module07Resdb", "Module 07 resdb", () => null);
+		new("module07Resrec", "Module 07 resrec", () => null);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_07 = new("dummy07", "-----", () => new dummy());
@@ -177,35 +183,50 @@ public class AvatarModuleInjector : ResoniteMod {
 				_config?.GetValue(MODULE_07_NAME),
 			};
 
+			bool autoExclude = _config?.GetValue(AUTO_EXCLUDE) ?? false;
+			string? excludeSlotName = _config?.GetValue(EXCLUDE_SLOT);
+			List<string?> excludeSlotNameList = new();
+			if (autoExclude) {
+				Slot? slot =  excludeSlotName != null ? avatar.FindChild(excludeSlotName) : avatar;
+				if (slot != null) {
+					foreach (Slot slotChild in slot.Children)
+					{
+						excludeSlotNameList.Add(slotChild.Name);
+					}
+				}
+			}
+
 			AvatarObjectSlot avatarObjectSlot = world.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
 			for (var i = 0; i < moduleUriList.Count; i++) {
 				var moduleUri = moduleUriList[i];
-				if (moduleUri != null) {
-					var moduleName = moduleNameList[i];
-					var moduleContainer = rootContainer.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
-					var moduleSlot = moduleContainer.AddSlot($"__AMI_MODULE_{i:D2}");
-					moduleContainer.StartTask(async delegate {
-						await moduleSlot.LoadObjectAsync(moduleUri);
-						Msg($"Module {moduleSlot.Name} Injected to {avatar.Name}");
-						moduleSlot.GetComponent<InventoryItem>()?.Unpack();
-						AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
-							avatarObjectComponent => {
-								try {
-									avatarObjectComponent.OnPreEquip(avatarObjectSlot);
-								} catch (Exception e) {
-									Msg($"Exception in OnPreEquip on {moduleContainer.Name}\n" + e.Message);
-								}
-							});
-						AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
-							avatarObjectComponent => {
-								try {
-									avatarObjectComponent.OnEquip(avatarObjectSlot);
-								} catch (Exception e) {
-									Msg($"Exception in OnEquip on {moduleContainer.Name}\n" + e.Message);
-								}
-							});
-					});
-				}
+				var moduleName = moduleNameList[i];
+				
+				if (moduleUri == null) continue;
+				if (autoExclude & excludeSlotNameList.Contains(moduleName)) continue;
+
+				var moduleContainer = rootContainer.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
+				var moduleSlot = moduleContainer.AddSlot($"__AMI_MODULE_{i:D2}");
+				moduleContainer.StartTask(async delegate {
+					await moduleSlot.LoadObjectAsync(moduleUri);
+					Msg($"Module {moduleSlot.Name} Injected to {avatar.Name}");
+					moduleSlot.GetComponent<InventoryItem>()?.Unpack();
+					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
+						avatarObjectComponent => {
+							try {
+								avatarObjectComponent.OnPreEquip(avatarObjectSlot);
+							} catch (Exception e) {
+								Msg($"Exception in OnPreEquip on {moduleContainer.Name}\n" + e.Message);
+							}
+						});
+					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
+						avatarObjectComponent => {
+							try {
+								avatarObjectComponent.OnEquip(avatarObjectSlot);
+							} catch (Exception e) {
+								Msg($"Exception in OnEquip on {moduleContainer.Name}\n" + e.Message);
+							}
+						});
+				});
 			}
 
 			world.RunInUpdates(1, delegate {
