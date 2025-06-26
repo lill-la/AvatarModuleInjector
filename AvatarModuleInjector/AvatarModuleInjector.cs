@@ -210,6 +210,10 @@ public class AvatarModuleInjector : ResoniteMod {
 					await moduleSlot.LoadObjectAsync(moduleUri);
 					Msg($"Module {moduleSlot.Name} Injected to {avatar.Name}");
 					moduleSlot.GetComponent<InventoryItem>()?.Unpack();
+					foreach (Slot child in moduleContainer.Children)
+					{
+						child.SetIdentityTransform();
+					}
 					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
 						avatarObjectComponent => {
 							try {
@@ -229,7 +233,7 @@ public class AvatarModuleInjector : ResoniteMod {
 				});
 			}
 
-			world.RunInUpdates(1, delegate {
+			world.RunInUpdates(2, delegate {
 				AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
 				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
