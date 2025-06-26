@@ -151,8 +151,8 @@ public class AvatarModuleInjector : ResoniteMod {
 				slot.Destroy();
 			}
 
-			var container = avatar.AddSlot("__AMI_CONTAINER", false);
-			container.Tag = "__AMI_CONTAINER";
+			var rootContainer = avatar.AddSlot("__AMI_CONTAINER", false);
+			rootContainer.Tag = "__AMI_CONTAINER";
 			var processingMarker = avatar.AddSlot("__AMI_PROCESSING_MARKER", false);
 			processingMarker.Tag = "__AMI_PROCESSING_MARKER";
 			List<Uri?> moduleUriList = new() {
@@ -177,37 +177,63 @@ public class AvatarModuleInjector : ResoniteMod {
 				_config?.GetValue(MODULE_07_NAME),
 			};
 
+			AvatarObjectSlot avatarObjectSlot = world.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
 			for (var i = 0; i < moduleUriList.Count; i++) {
 				var moduleUri = moduleUriList[i];
 				if (moduleUri != null) {
 					var moduleName = moduleNameList[i];
-					var moduleContainer = container.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
+					var moduleContainer = rootContainer.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
 					var moduleSlot = moduleContainer.AddSlot($"__AMI_MODULE_{i:D2}");
-					world.RunInUpdates(i + 1, delegate {
-						moduleContainer.StartTask(async delegate {
-							await moduleSlot.LoadObjectAsync(moduleUri);
-							moduleSlot.GetComponent<InventoryItem>().Unpack();
-						});
+					moduleContainer.StartTask(async delegate {
+						await moduleSlot.LoadObjectAsync(moduleUri);
+						Msg($"Module {moduleSlot.Name} Injected to {avatar.Name}");
+						moduleSlot.GetComponent<InventoryItem>()?.Unpack();
+						AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
+							avatarObjectComponent => {
+								try {
+									avatarObjectComponent.OnPreEquip(avatarObjectSlot);
+								} catch (Exception e) {
+									Msg($"Exception in OnPreEquip on {moduleContainer.Name}\n" + e.Message);
+								}
+							});
+						AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
+							avatarObjectComponent => {
+								try {
+									avatarObjectComponent.OnEquip(avatarObjectSlot);
+								} catch (Exception e) {
+									Msg($"Exception in OnEquip on {moduleContainer.Name}\n" + e.Message);
+								}
+							});
 					});
 				}
 			}
 
-			world.RunInUpdates(moduleUriList.Count + 2, delegate {
+			world.RunInUpdates(1, delegate {
 				AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
-				var dummyHead = world.LocalUserSpace.AddSlot("Dummy Head", false);
-				dummyHead.AttachComponent<AvatarPoseNode>().Node.Value = BodyNode.Head;
-				dummyHead.AttachComponent<AvatarDestroyOnDequip>();
-				avatarManager.Equip(dummyHead);
-				avatarManager.Equip(avatar);
+				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
+					    a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null) {
+					avatarManager.AutomaticNameBadge?.Destroy();
+				}
+				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
+					    a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null) {
+					avatarManager.AutomaticIconBadge?.Destroy();
+				}
+				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
+					    a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null) {
+					avatarManager.AutomaticLiveBadge?.Destroy();
+				}
 
-				world.RunInUpdates(2, delegate {
-					var markers = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
-					foreach (Slot marker in markers) {
-						marker.Destroy();
-					}
-				});
+				var markers = avatar.GetChildrenWithTag("__AMI_PROCESSING_MARKER");
+				foreach (Slot marker in markers) {
+					marker.Destroy();
+				}
 			});
+		}
+		
+		private static bool IsUnderView(Slot slot)
+		{
+			return slot.GetComponentInParents((AvatarPoseNode p) => p.Node.Value == BodyNode.View) != null;
 		}
 	}
 }
