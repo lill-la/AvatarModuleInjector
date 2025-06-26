@@ -31,6 +31,9 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
 		new("module00Resrec", "Module 00 resrec", () => null);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_00_SCALE_TO_USER =
+		new("module00ScaleTouser", "Module 00 scale will set to user global scale", () => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
 
@@ -40,6 +43,9 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
 		new("module01Resrec", "Module 01 resrec", () => null);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_01_SCALE_TO_USER =
+		new("module01ScaleTouser", "Module 01 scale will set to user global scale", () => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
 
@@ -48,6 +54,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
 		new("module02Resrec", "Module 02 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_SCALE_TO_USER =
+		new("module02ScaleTouser", "Module 02 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
@@ -57,6 +66,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
 		new("module03Resrec", "Module 03 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_SCALE_TO_USER =
+		new("module03ScaleTouser", "Module 03 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
@@ -66,6 +78,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
 		new("module04Resrec", "Module 04 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_SCALE_TO_USER =
+		new("module04ScaleTouser", "Module 04 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
@@ -75,6 +90,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
 		new("module05Resrec", "Module 05 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_SCALE_TO_USER =
+		new("module05ScaleTouser", "Module 05 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_05 = new("dummy05", "-----", () => new dummy());
@@ -85,6 +103,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
 		new("module06Resrec", "Module 06 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_SCALE_TO_USER =
+		new("module06ScaleTouser", "Module 06 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
@@ -94,6 +115,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
 		new("module07Resrec", "Module 07 resrec", () => null);
+	
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_SCALE_TO_USER =
+		new("module07ScaleTouser", "Module 07 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_07 = new("dummy07", "-----", () => new dummy());
@@ -182,6 +206,17 @@ public class AvatarModuleInjector : ResoniteMod {
 				_config?.GetValue(MODULE_06_NAME),
 				_config?.GetValue(MODULE_07_NAME),
 			};
+			
+			List<bool?> moduleIsUserScaleList = new() {
+				_config?.GetValue(MODULE_00_SCALE_TO_USER),
+				_config?.GetValue(MODULE_01_SCALE_TO_USER),
+				_config?.GetValue(MODULE_02_SCALE_TO_USER),
+				_config?.GetValue(MODULE_03_SCALE_TO_USER),
+				_config?.GetValue(MODULE_04_SCALE_TO_USER),
+				_config?.GetValue(MODULE_05_SCALE_TO_USER),
+				_config?.GetValue(MODULE_06_SCALE_TO_USER),
+				_config?.GetValue(MODULE_07_SCALE_TO_USER),
+			};
 
 			bool autoExclude = _config?.GetValue(AUTO_EXCLUDE) ?? false;
 			string? excludeSlotName = _config?.GetValue(EXCLUDE_SLOT);
@@ -200,6 +235,7 @@ public class AvatarModuleInjector : ResoniteMod {
 			for (var i = 0; i < moduleUriList.Count; i++) {
 				var moduleUri = moduleUriList[i];
 				var moduleName = moduleNameList[i];
+				var moduleIsUserScale = moduleIsUserScaleList[i];
 				
 				if (moduleUri == null) continue;
 				if (autoExclude & excludeSlotNameList.Contains(moduleName)) continue;
@@ -213,6 +249,7 @@ public class AvatarModuleInjector : ResoniteMod {
 					foreach (Slot child in moduleContainer.Children)
 					{
 						child.SetIdentityTransform();
+						if (moduleIsUserScale ?? false) child.ScaleToUser(world.LocalUser);
 					}
 					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
 						avatarObjectComponent => {
