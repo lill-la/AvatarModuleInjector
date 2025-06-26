@@ -103,7 +103,7 @@ public class AvatarModuleInjector : ResoniteMod
             }
             else
             {
-                const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  }\n]";
+                const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  }\n]";
 
                 File.WriteAllText(_config.GetValue(ModuleJson), defaultModule);
                 Msg($"No modules file found at {_config.GetValue(ModuleJson)}. Created a new one with default template.");
