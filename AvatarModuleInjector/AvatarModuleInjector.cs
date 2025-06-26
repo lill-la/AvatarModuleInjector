@@ -30,7 +30,8 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<int> EXCLUDE_SLOT_SEARCH_MAX_DEPTH =
 		new("ExcludeSlotSearchMaxDepth",
-			"Maximum depth for FindChildByName when searching for ExcludeSlot from the avatar root. Set -1 to no-limit.", () => -1);
+			"Maximum depth for FindChildByName when searching for ExcludeSlot from the avatar root. Set -1 to no-limit.",
+			() => -1);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_EXCLUDE = new("dummyExclude", "-----", () => new dummy());
@@ -44,6 +45,11 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_00_SCALE_TO_USER =
 		new("module00ScaleTouser", "Module 00 scale will set to user global scale", () => false);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_00_NAME_BADGE =
+		new("module00NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
 
@@ -55,6 +61,11 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_01_SCALE_TO_USER =
 		new("module01ScaleTouser", "Module 01 scale will set to user global scale", () => false);
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_01_NAME_BADGE =
+		new("module01NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
@@ -68,6 +79,11 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_SCALE_TO_USER =
 		new("module02ScaleTouser", "Module 02 scale will set to user global scale", () => false);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_NAME_BADGE =
+		new("module02NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
 
@@ -79,6 +95,11 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_SCALE_TO_USER =
 		new("module03ScaleTouser", "Module 03 scale will set to user global scale", () => false);
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_NAME_BADGE =
+		new("module03NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
@@ -92,6 +113,11 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_SCALE_TO_USER =
 		new("module04ScaleTouser", "Module 04 scale will set to user global scale", () => false);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_NAME_BADGE =
+		new("module04NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
 
@@ -103,6 +129,11 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_SCALE_TO_USER =
 		new("module05ScaleTouser", "Module 05 scale will set to user global scale", () => false);
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_NAME_BADGE =
+		new("module05NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_05 = new("dummy05", "-----", () => new dummy());
@@ -117,6 +148,11 @@ public class AvatarModuleInjector : ResoniteMod {
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_SCALE_TO_USER =
 		new("module06ScaleTouser", "Module 06 scale will set to user global scale", () => false);
 
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_NAME_BADGE =
+		new("module06NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
+
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
 
@@ -128,6 +164,11 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_SCALE_TO_USER =
 		new("module07ScaleTouser", "Module 07 scale will set to user global scale", () => false);
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_NAME_BADGE =
+		new("module07NameBadge",
+			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
+			() => false);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_07 = new("dummy07", "-----", () => new dummy());
@@ -166,6 +207,7 @@ public class AvatarModuleInjector : ResoniteMod {
 		private static void InjectModules(SyncRef<IAvatarObject> avatarObject) {
 			Slot avatar = avatarObject.Target.Slot;
 			World world = avatar.World;
+			AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
 			if (avatar.Name == "Dummy Head") return;
 
@@ -214,6 +256,25 @@ public class AvatarModuleInjector : ResoniteMod {
 				_config?.GetValue(MODULE_07_SCALE_TO_USER),
 			};
 
+			List<bool?> moduleIsCustomNameBadgeList = new() {
+				_config?.GetValue(MODULE_00_NAME_BADGE),
+				_config?.GetValue(MODULE_01_NAME_BADGE),
+				_config?.GetValue(MODULE_02_NAME_BADGE),
+				_config?.GetValue(MODULE_03_NAME_BADGE),
+				_config?.GetValue(MODULE_04_NAME_BADGE),
+				_config?.GetValue(MODULE_05_NAME_BADGE),
+				_config?.GetValue(MODULE_06_NAME_BADGE),
+				_config?.GetValue(MODULE_07_NAME_BADGE),
+			};
+
+			bool avatarHasCustomNameBadge
+				= (avatar.GetComponentInChildren((AvatarNameTagAssigner a) =>
+					  a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null)
+				  | (avatar.GetComponentInChildren((AvatarBadgeManager a) =>
+					  a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null)
+				  | (avatar.GetComponentInChildren((AvatarLiveIndicator a) =>
+					  a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null);
+
 			bool autoExclude = _config?.GetValue(AUTO_EXCLUDE) ?? false;
 			string? excludeSlotNames = _config?.GetValue(EXCLUDE_SLOT);
 			int excludeSlotSearchMaxDepth = _config?.GetValue(EXCLUDE_SLOT_SEARCH_MAX_DEPTH) ?? -1;
@@ -226,7 +287,9 @@ public class AvatarModuleInjector : ResoniteMod {
 
 				var moduleName = moduleNameList[i];
 				if (String.IsNullOrWhiteSpace(moduleName)) moduleName = null;
-				var moduleIsUserScale = moduleIsUserScaleList[i];
+				var moduleIsUserScale = moduleIsUserScaleList[i] ?? false;
+				var moduleIsCustomNameBadge = moduleIsCustomNameBadgeList[i] ?? false;
+				if (avatarHasCustomNameBadge & moduleIsCustomNameBadge) continue;
 
 				if (autoExclude & moduleName != null & excludeSlotNames != null) {
 					bool exclude = false;
@@ -253,7 +316,7 @@ public class AvatarModuleInjector : ResoniteMod {
 					moduleSlot.GetComponent<InventoryItem>()?.Unpack();
 					foreach (Slot child in moduleContainer.Children) {
 						child.SetIdentityTransform();
-						if (moduleIsUserScale ?? false) child.ScaleToUser(world.LocalUser);
+						if (moduleIsUserScale) child.ScaleToUser(world.LocalUser);
 					}
 
 					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
@@ -277,20 +340,18 @@ public class AvatarModuleInjector : ResoniteMod {
 
 			world.RunInUpdates(2, delegate {
 				if (avatarObject.State != ReferenceState.Available) return;
-				
-				AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
 				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
 					    a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticNameBadge?.Destroy();
 				}
 
-				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
+				if (rootContainer.GetComponentInChildren((AvatarBadgeManager a) =>
 					    a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticIconBadge?.Destroy();
 				}
 
-				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
+				if (rootContainer.GetComponentInChildren((AvatarLiveIndicator a) =>
 					    a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticLiveBadge?.Destroy();
 				}
