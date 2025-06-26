@@ -37,16 +37,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_EXCLUDE = new("dummyExclude", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_00_NAME =
-		new("module00Name", "Module 00 name", () => null);
+		new("module00: Name", "Module 00 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_00_RESDB =
-		new("module00Resrec", "Module 00 resrec", () => null);
+		new("module00: Resrec", "Module 00 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_00_SCALE_TO_USER =
-		new("module00ScaleTouser", "Module 00 scale will set to user global scale", () => false);
+		new("module00: ScaleToUser", "Module 00 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_00_NAME_BADGE =
-		new("module00NameBadge",
+		new("module00: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -54,16 +54,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_00 = new("dummy00", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_01_NAME =
-		new("module01Name", "Module 01 name", () => null);
+		new("module01: Name", "Module 01 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_01_RESDB =
-		new("module01Resrec", "Module 01 resrec", () => null);
+		new("module01: Resrec", "Module 01 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_01_SCALE_TO_USER =
-		new("module01ScaleTouser", "Module 01 scale will set to user global scale", () => false);
+		new("module01: ScaleToUser", "Module 01 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_01_NAME_BADGE =
-		new("module01NameBadge",
+		new("module01: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -71,16 +71,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_01 = new("dummy01", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_02_NAME =
-		new("module02Name", "Module 02 name", () => null);
+		new("module02: Name", "Module 02 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
-		new("module02Resrec", "Module 02 resrec", () => null);
+		new("module02: Resrec", "Module 02 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_SCALE_TO_USER =
-		new("module02ScaleTouser", "Module 02 scale will set to user global scale", () => false);
+		new("module02: ScaleToUser", "Module 02 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_NAME_BADGE =
-		new("module02NameBadge",
+		new("module02: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -88,16 +88,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_02 = new("dummy02", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_03_NAME =
-		new("module03Name", "Module 03 name", () => null);
+		new("module03: Name", "Module 03 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
-		new("module03Resrec", "Module 03 resrec", () => null);
+		new("module03: Resrec", "Module 03 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_SCALE_TO_USER =
-		new("module03ScaleTouser", "Module 03 scale will set to user global scale", () => false);
+		new("module03: ScaleToUser", "Module 03 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_NAME_BADGE =
-		new("module03NameBadge",
+		new("module03: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -105,16 +105,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_03 = new("dummy03", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_04_NAME =
-		new("module04Name", "Module 04 name", () => null);
+		new("module04: Name", "Module 04 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
-		new("module04Resrec", "Module 04 resrec", () => null);
+		new("module04: Resrec", "Module 04 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_SCALE_TO_USER =
-		new("module04ScaleTouser", "Module 04 scale will set to user global scale", () => false);
+		new("module04: ScaleToUser", "Module 04 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_NAME_BADGE =
-		new("module04NameBadge",
+		new("module04: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -122,16 +122,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_04 = new("dummy04", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_05_NAME =
-		new("module05Name", "Module 05 name", () => null);
+		new("module05: Name", "Module 05 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
-		new("module05Resrec", "Module 05 resrec", () => null);
+		new("module05: Resrec", "Module 05 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_SCALE_TO_USER =
-		new("module05ScaleTouser", "Module 05 scale will set to user global scale", () => false);
+		new("module05: ScaleToUser", "Module 05 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_NAME_BADGE =
-		new("module05NameBadge",
+		new("module05: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -140,16 +140,16 @@ public class AvatarModuleInjector : ResoniteMod {
 
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_06_NAME =
-		new("module06Name", "Module 06 name", () => null);
+		new("module06: Name", "Module 06 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
-		new("module06Resrec", "Module 06 resrec", () => null);
+		new("module06: Resrec", "Module 06 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_SCALE_TO_USER =
-		new("module06ScaleTouser", "Module 06 scale will set to user global scale", () => false);
+		new("module06: ScaleToUser", "Module 06 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_NAME_BADGE =
-		new("module06NameBadge",
+		new("module06: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
@@ -157,16 +157,16 @@ public class AvatarModuleInjector : ResoniteMod {
 	private static readonly ModConfigurationKey<dummy> DUMMY_06 = new("dummy06", "-----", () => new dummy());
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> MODULE_07_NAME =
-		new("module07Name", "Module 07 name", () => null);
+		new("module07: Name", "Module 07 name", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
-		new("module07Resrec", "Module 07 resrec", () => null);
+		new("module07: Resrec", "Module 07 resrec", () => null);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_SCALE_TO_USER =
-		new("module07ScaleTouser", "Module 07 scale will set to user global scale", () => false);
+		new("module07: ScaleToUser", "Module 07 scale will set to user global scale", () => false);
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_NAME_BADGE =
-		new("module07NameBadge",
+		new("module07: NameBadge",
 			"If avatar already has custom namebadge (AvatarNameTagAssigner or AvatarBadgeManager or AvatarLiveIndicator), this module will not inject.",
 			() => false);
 
