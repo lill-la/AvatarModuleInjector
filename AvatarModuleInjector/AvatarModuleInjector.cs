@@ -52,7 +52,7 @@ public class AvatarModuleInjector : ResoniteMod
     ""Name"": """",
     ""URI"": """",
     ""ExcludeIfExists"": false,
-    ""ScaleToUser"": false
+    ""ScaleToUser"": false,
     ""IsNameBadge"": false
   }
 ]";
@@ -116,11 +116,11 @@ public class AvatarModuleInjector : ResoniteMod
             if (string.IsNullOrEmpty(moduleJsonString)) return;
 
             Modules.Clear();
-            Modules.AddRange(JsonSerializer.Deserialize<List<Module>>(moduleJsonString));
+            Modules.AddRange(JsonSerializer.Deserialize<List<Module>>(moduleJsonString, new JsonSerializerOptions { AllowTrailingCommas = true }));
             if (Modules.Count == 0) return;
 
             string excludeSlotNames = _config.GetValue(ExcludeSlotNames);
-            List<string> excludeSlotNameList = excludeSlotNames.Split(',').ToList();
+            List<string> excludeSlotNameList = excludeSlotNames?.Split(',').ToList() ?? new List<string>();
 
             List<Slot> oldMarker = avatar.GetChildrenWithTag(ProcessingMarkerTag);
             if (oldMarker.Count != 0) return;
@@ -144,7 +144,7 @@ public class AvatarModuleInjector : ResoniteMod
                 Module module = Modules[i];
 
                 string name = string.IsNullOrEmpty(module.Name) ? $"__AMI_MODULE_{i}" : module.Name;
-                Uri uri = new Uri(module.Uri);
+                Uri uri = string.IsNullOrEmpty(module.Uri) ? null : new Uri(module.Uri);
                 bool excludeIfExists = module.ExcludeIfExists;
                 bool scaleToUser = module.ScaleToUser;
                 bool isNameBadge = module.IsNameBadge;
