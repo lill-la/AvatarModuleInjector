@@ -22,7 +22,7 @@ public class AvatarModuleInjector : ResoniteMod
     public override string Version => VERSION_CONSTANT;
     public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
 
-    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "A JSON string containing an array of modules to inject into avatars.", () => "Modules.json");
+    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
 
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> AutoExclude = new ModConfigurationKey<bool>("AutoExclude", "Exclude the slots that match any slot names in the Exclude Slot List", () => false);
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ExcludeSlotNames = new ModConfigurationKey<string>("ExcludeSlotList", "Exclude slot name under avatar root. Comma will separate (Cannot specify a slot contains comma in its name). Only the first matching slot is considered. ex: \"Flux,System\"", () => "__AMI_AVATAR_ROOT");
