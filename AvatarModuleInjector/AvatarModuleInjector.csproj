@@ -6,7 +6,7 @@
 		<TargetFramework>net472</TargetFramework>
 		<FileAlignment>512</FileAlignment>
 		<LangVersion>10.0</LangVersion>
-		<Nullable>enable</Nullable>
+		<Nullable>disable</Nullable>
 		<Deterministic>true</Deterministic>
 		<!-- Change CopyToMods to true if you'd like builds to be moved into the Mods folder automatically-->
 		<CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
@@ -26,7 +26,7 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="HarmonyLib">
-			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+			<HintPath>$(ResonitePath)MonkeyLoader\0Harmony.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="FrooxEngine">
@@ -37,10 +37,26 @@
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="Elements.Assets">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Assets.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="System.Text.Json">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Text.Json.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="System.Memory">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Memory.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="SkyFrost.Base.Models">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\SkyFrost.Base.Models.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EditorConfigFiles Remove=".editorconfig" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
