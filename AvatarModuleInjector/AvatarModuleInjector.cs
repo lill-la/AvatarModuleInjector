@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.CommonAvatar;
@@ -82,7 +81,7 @@ public class AvatarModuleInjector : ResoniteMod
             if (avatarObj.State != ReferenceState.Available) return;
 
             Msg($"Avatar Equip : {avatarObj.Target.Slot.Name}");
-            
+
             // Check if the avatar is allowed to load cloud avatars and has the necessary permissions
             if (avatarObj.World.RootSlot.GetComponentInChildren<CommonAvatarBuilder>()?.LoadCloudAvatars.Value is not true
                 || avatarObj.World.Permissions.Check(avatarObj.Target, (AvatarObjectPermissions p) => p.CanEquip(avatarObj.Target, avatarObj.World.LocalUser))) return;
@@ -125,9 +124,9 @@ public class AvatarModuleInjector : ResoniteMod
             processingMarker.Tag = ProcessingMarkerTag;
 
             AvatarManager avatarManager = avatar.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
-            bool avatarHasCustomNameBadge = avatar.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null
-                                            || avatar.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null
-                                            || avatar.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null;
+            bool avatarHasCustomNameBadge = avatar.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null
+                                            || avatar.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null
+                                            || avatar.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
 
             AvatarObjectSlot avatarObjectSlot = avatar.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
             for (int i = 0; i < Modules.Count; i++)
@@ -159,7 +158,6 @@ public class AvatarModuleInjector : ResoniteMod
                 }
 
                 Slot moduleContainer = rootContainer.AddSlot(name, false);
-
                 moduleContainer.StartTask(async delegate
                 {
                     Slot moduleRoot = moduleContainer.AddSlot("TempSlot", false);
@@ -202,9 +200,9 @@ public class AvatarModuleInjector : ResoniteMod
 
             avatar.RunInUpdates(2, delegate
             {
-                bool hasCustomNameTag = rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null;
-                bool hasCustomIconBadge = rootContainer.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null;
-                bool hasCustomLiveBadge = rootContainer.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null;
+                bool hasCustomNameTag = rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null;
+                bool hasCustomIconBadge = rootContainer.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null;
+                bool hasCustomLiveBadge = rootContainer.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
 
                 if (hasCustomNameTag) avatarManager.AutomaticNameBadge?.Destroy();
                 if (hasCustomIconBadge) avatarManager.AutomaticIconBadge?.Destroy();
@@ -217,9 +215,6 @@ public class AvatarModuleInjector : ResoniteMod
                 }
             });
         }
-
-        private static bool IsUnderView(Slot slot)
-            => slot.GetComponentInParents((AvatarPoseNode p) => p.Node.Value == BodyNode.View) != null;
     }
 
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
@@ -235,5 +230,9 @@ public class AvatarModuleInjector : ResoniteMod
 
 public static class Helpers
 {
-    public static string GetRawString(this string text) => string.IsNullOrEmpty(text) ? "Null" : new StringRenderTree(text).GetRawString();
+    public static bool IsUnderView(this Slot slot)
+        => slot.GetComponentInParents((AvatarPoseNode p) => p.Node.Value == BodyNode.View) != null;
+
+    public static string GetRawString(this string text)
+        => string.IsNullOrEmpty(text) ? "Null" : new StringRenderTree(text).GetRawString();
 }
