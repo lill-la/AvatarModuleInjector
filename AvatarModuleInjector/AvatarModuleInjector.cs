@@ -159,11 +159,12 @@ public class AvatarModuleInjector : ResoniteMod {
 
 			if (avatarObj.State == ReferenceState.Available) {
 				Msg($"Avatar Equip : {avatarObj.Target.Slot.Name}");
-				InjectModules(avatarObj.Target.Slot);
+				InjectModules(avatarObj);
 			}
 		}
 
-		private static void InjectModules(Slot avatar) {
+		private static void InjectModules(SyncRef<IAvatarObject> avatarObject) {
+			Slot avatar = avatarObject.Target.Slot;
 			World world = avatar.World;
 
 			if (avatar.Name == "Dummy Head") return;
@@ -275,6 +276,8 @@ public class AvatarModuleInjector : ResoniteMod {
 			}
 
 			world.RunInUpdates(2, delegate {
+				if (avatarObject.State != ReferenceState.Available) return;
+				
 				AvatarManager avatarManager = world.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
 
 				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
