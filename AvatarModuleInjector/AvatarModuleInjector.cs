@@ -134,8 +134,6 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	private static ModConfiguration? _config;
 
-	private static Dictionary<RefID, Slot> avatars = new();
-
 	public override void OnEngineInit() {
 		_config = GetConfiguration();
 
@@ -151,30 +149,17 @@ public class AvatarModuleInjector : ResoniteMod {
 			    (__instance.Slot.Name?.StartsWith("User") ?? false)) {
 				if (__instance is AvatarObjectSlot avatarObjSlot) {
 					avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
-					__instance.Disposing += Worker_Disposing;
 					Msg($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
 				}
 			}
 		}
 
-		private static void Worker_Disposing(Worker obj) {
-			avatars.Remove(obj.ReferenceID);
-			Msg($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
-		}
-
 		private static void Equipped_OnTargetChange(SyncRef<IAvatarObject> avatarObj) {
 			if (avatarObj?.Target?.Node != BodyNode.Root) return;
-			if (avatars.TryGetValue(avatarObj.Worker.ReferenceID, out var oldAvatar)) {
-				if (!(oldAvatar is null)) {
-					Msg($"Avatar DeEquip : {oldAvatar.Name}");
-					avatars[avatarObj.Worker.ReferenceID] = null!;
-				}
-			}
 
 			if (avatarObj.State == ReferenceState.Available) {
 				Msg($"Avatar Equip : {avatarObj.Target.Slot.Name}");
 				InjectModules(avatarObj.Target.Slot);
-				avatars[avatarObj.Worker.ReferenceID] = avatarObj.Target.Slot;
 			}
 		}
 
