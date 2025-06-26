@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Elements.Core;
 
@@ -19,8 +20,17 @@ public class AvatarModuleInjector : ResoniteMod {
 	public override string Version => VERSION_CONSTANT;
 	public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
 
-	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> AUTO_EXCLUDE = new("AutoExclude", "If a slot with the same name as ModuleName exists directly under ExcludeSlot, it will be excluded.", () => false);
-	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> EXCLUDE_SLOT = new("ExcludeSlot", "Exclude slot name under avatar root. (Setting null will search directly under the avatar root)", () => null);
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> AUTO_EXCLUDE = new("AutoExclude",
+		"If a slot with the same name as ModuleName exists directly under ExcludeSlot, it will be excluded.",
+		() => false);
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<string?> EXCLUDE_SLOT = new("ExcludeSlotList",
+		"Exclude slot name under avatar root. \"__AMI_AVATAR_ROOT\" is avatar root slot. Comma will separate (Cannot specify a slot contains comma in its name). Only the first matching slot is considered. ex: \"__AMI_AVATAR_ROOT,Flux,System\"",
+		() => "__AMI_AVATAR_ROOT");
+
+	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<int> EXCLUDE_SLOT_SEARCH_MAX_DEPTH =
+		new("ExcludeSlotSearchMaxDepth",
+			"Maximum depth for FindChildByName when searching for ExcludeSlot from the avatar root. Set -1 to no-limit.", () => -1);
 
 	[AutoRegisterConfigKey]
 	private static readonly ModConfigurationKey<dummy> DUMMY_EXCLUDE = new("dummyExclude", "-----", () => new dummy());
@@ -54,7 +64,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_02_RESDB =
 		new("module02Resrec", "Module 02 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_02_SCALE_TO_USER =
 		new("module02ScaleTouser", "Module 02 scale will set to user global scale", () => false);
 
@@ -66,7 +76,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_03_RESDB =
 		new("module03Resrec", "Module 03 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_03_SCALE_TO_USER =
 		new("module03ScaleTouser", "Module 03 scale will set to user global scale", () => false);
 
@@ -78,7 +88,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_04_RESDB =
 		new("module04Resrec", "Module 04 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_04_SCALE_TO_USER =
 		new("module04ScaleTouser", "Module 04 scale will set to user global scale", () => false);
 
@@ -90,7 +100,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_05_RESDB =
 		new("module05Resrec", "Module 05 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_05_SCALE_TO_USER =
 		new("module05ScaleTouser", "Module 05 scale will set to user global scale", () => false);
 
@@ -103,7 +113,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_06_RESDB =
 		new("module06Resrec", "Module 06 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_06_SCALE_TO_USER =
 		new("module06ScaleTouser", "Module 06 scale will set to user global scale", () => false);
 
@@ -115,7 +125,7 @@ public class AvatarModuleInjector : ResoniteMod {
 
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<Uri?> MODULE_07_RESDB =
 		new("module07Resrec", "Module 07 resrec", () => null);
-	
+
 	[AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> MODULE_07_SCALE_TO_USER =
 		new("module07ScaleTouser", "Module 07 scale will set to user global scale", () => false);
 
@@ -206,7 +216,7 @@ public class AvatarModuleInjector : ResoniteMod {
 				_config?.GetValue(MODULE_06_NAME),
 				_config?.GetValue(MODULE_07_NAME),
 			};
-			
+
 			List<bool?> moduleIsUserScaleList = new() {
 				_config?.GetValue(MODULE_00_SCALE_TO_USER),
 				_config?.GetValue(MODULE_01_SCALE_TO_USER),
@@ -219,27 +229,35 @@ public class AvatarModuleInjector : ResoniteMod {
 			};
 
 			bool autoExclude = _config?.GetValue(AUTO_EXCLUDE) ?? false;
-			string? excludeSlotName = _config?.GetValue(EXCLUDE_SLOT);
-			List<string?> excludeSlotNameList = new();
-			if (autoExclude) {
-				Slot? slot =  excludeSlotName != null ? avatar.FindChild(excludeSlotName) : avatar;
-				if (slot != null) {
-					foreach (Slot slotChild in slot.Children)
-					{
-						excludeSlotNameList.Add(slotChild.Name);
-					}
-				}
-			}
+			string? excludeSlotNames = _config?.GetValue(EXCLUDE_SLOT);
+			int excludeSlotSearchMaxDepth = _config?.GetValue(EXCLUDE_SLOT_SEARCH_MAX_DEPTH) ?? -1;
+			var excludeSlotNameList = excludeSlotNames?.Split(',').ToList() ?? new List<string>();
 
 			AvatarObjectSlot avatarObjectSlot = world.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
 			for (var i = 0; i < moduleUriList.Count; i++) {
 				var moduleUri = moduleUriList[i];
+				if (moduleUri == null) continue;
+
 				var moduleName = moduleNameList[i];
 				if (String.IsNullOrWhiteSpace(moduleName)) moduleName = null;
 				var moduleIsUserScale = moduleIsUserScaleList[i];
-				
-				if (moduleUri == null) continue;
-				if (autoExclude & excludeSlotNameList.Contains(moduleName)) continue;
+
+				if (autoExclude & moduleName != null & excludeSlotNames != null) {
+					bool exclude = false;
+					foreach (string excludeSlotName in excludeSlotNameList) {
+						Slot? slot = avatar.FindChild(_slot => _slot.Name == excludeSlotName,
+							maxDepth: excludeSlotSearchMaxDepth);
+						if (excludeSlotName == "__AMI_AVATAR_ROOT") slot = avatar;
+						if (slot != null) {
+							if (slot.FindChild(moduleName!) != null) {
+								exclude = true;
+								break;
+							}
+						}
+					}
+
+					if (exclude) continue;
+				}
 
 				var moduleContainer = rootContainer.AddSlot(moduleName ?? $"__AMI_MODULE_{i:D2}");
 				var moduleSlot = moduleContainer.AddSlot($"__AMI_MODULE_{i:D2}");
@@ -247,11 +265,11 @@ public class AvatarModuleInjector : ResoniteMod {
 					await moduleSlot.LoadObjectAsync(moduleUri);
 					Msg($"Module {moduleSlot.Name} Injected to {avatar.Name}");
 					moduleSlot.GetComponent<InventoryItem>()?.Unpack();
-					foreach (Slot child in moduleContainer.Children)
-					{
+					foreach (Slot child in moduleContainer.Children) {
 						child.SetIdentityTransform();
 						if (moduleIsUserScale ?? false) child.ScaleToUser(world.LocalUser);
 					}
+
 					AvatarObjectSlot.ForeachObjectComponent(moduleContainer,
 						avatarObjectComponent => {
 							try {
@@ -278,10 +296,12 @@ public class AvatarModuleInjector : ResoniteMod {
 					    a.Slot != avatarManager.AutomaticNameBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticNameBadge?.Destroy();
 				}
+
 				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
 					    a.Slot != avatarManager.AutomaticIconBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticIconBadge?.Destroy();
 				}
+
 				if (rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) =>
 					    a.Slot != avatarManager.AutomaticLiveBadge && !IsUnderView(a.Slot)) != null) {
 					avatarManager.AutomaticLiveBadge?.Destroy();
@@ -293,9 +313,8 @@ public class AvatarModuleInjector : ResoniteMod {
 				}
 			});
 		}
-		
-		private static bool IsUnderView(Slot slot)
-		{
+
+		private static bool IsUnderView(Slot slot) {
 			return slot.GetComponentInParents((AvatarPoseNode p) => p.Node.Value == BodyNode.View) != null;
 		}
 	}
