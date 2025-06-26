@@ -16,11 +16,11 @@ namespace AvatarModuleInjector;
 
 public class AvatarModuleInjector : ResoniteMod
 {
-    internal const string VERSION_CONSTANT = "0.8.0";
+    internal const string VERSION_CONSTANT = "0.9.0";
     public override string Name => "AvatarModuleInjector";
-    public override string Author => "lill";
+    public override string Author => "lill, NepuShiro";
     public override string Version => VERSION_CONSTANT;
-    public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
+    public override string Link => "https://github.com/NepuShiro/AvatarModuleInjector/";
 
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
 
