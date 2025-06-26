@@ -80,12 +80,15 @@ public class AvatarModuleInjector : ResoniteMod
 
             if (avatarObj.State != ReferenceState.Available) return;
 
-            Msg($"Avatar Equip : {avatarObj.Target.Slot.Name}");
-
             // Check if the avatar is allowed to load cloud avatars and has the necessary permissions
-            if (avatarObj.World.RootSlot.GetComponentInChildren<CommonAvatarBuilder>()?.LoadCloudAvatars.Value is not true
-                || avatarObj.World.Permissions.Check(avatarObj.Target, (AvatarObjectPermissions p) => p.CanEquip(avatarObj.Target, avatarObj.World.LocalUser))) return;
+            // if (avatarObj.World.RootSlot.GetComponentInChildren<CommonAvatarBuilder>()?.LoadCloudAvatars.Value is not true
+            //     || avatarObj.World.Permissions.Check(avatarObj.Target, (AvatarObjectPermissions p) => p.CanEquip(avatarObj.Target, avatarObj.World.LocalUser)))
+            // {
+            //     Msg("Equipped_OnTargetChange: Avatar not allowed to load cloud avatars or missing permissions");
+            //     return;
+            // }
 
+            Msg($"Avatar Equip : {avatarObj.Target.Slot.Name.GetRawString()}");
             avatarObj.Target.Slot.RunInUpdates(1, () => InjectModules(avatarObj.Target.Slot));
             Avatars[avatarObj.Worker.ReferenceID] = avatarObj.Target.Slot;
         }
@@ -106,14 +109,26 @@ public class AvatarModuleInjector : ResoniteMod
                 Msg($"No modules file found at {_config.GetValue(ModuleJson)}. Created a new one with default template.");
             }
 
-            if (string.IsNullOrEmpty(moduleJsonString)) return;
+            if (string.IsNullOrEmpty(moduleJsonString))
+            {
+                Msg("InjectModules: Module JSON string is null or empty");
+                return;
+            }
 
             Modules.Clear();
             Modules.AddRange(JsonSerializer.Deserialize<List<Module>>(moduleJsonString, new JsonSerializerOptions { AllowTrailingCommas = true }));
-            if (Modules.Count == 0) return;
+            if (Modules.Count == 0)
+            {
+                Msg("InjectModules: No modules found after deserialization");
+                return;
+            }
 
             List<Slot> oldMarker = avatar.GetChildrenWithTag(ProcessingMarkerTag);
-            if (oldMarker.Count != 0) return;
+            if (oldMarker.Count != 0)
+            {
+                Msg("InjectModules: Processing marker already exists");
+                return;
+            }
 
             Slot rootContainer = avatar.AddSlot(ContainerTag, false);
             rootContainer.Tag = ContainerTag;
@@ -139,8 +154,17 @@ public class AvatarModuleInjector : ResoniteMod
                 bool scaleToUser = module.ScaleToUser;
                 bool isNameBadge = module.IsNameBadge;
 
-                if (uri == null) continue;
-                if (avatarHasCustomNameBadge && isNameBadge) continue;
+                if (uri == null)
+                {
+                    Msg($"InjectModules: Skipping module {name} - URI is null");
+                    continue;
+                }
+        
+                if (avatarHasCustomNameBadge && isNameBadge)
+                {
+                    Msg($"InjectModules: Skipping name badge module {name} - avatar already has custom name badge");
+                    continue;
+                }
 
                 if (excludeIfExists)
                 {
@@ -154,8 +178,13 @@ public class AvatarModuleInjector : ResoniteMod
                         }
                     });
 
-                    if (found) continue;
+                    if (found)
+                    {
+                        Msg($"InjectModules: Skipping module {name} - already exists");
+                        continue;
+                    }
                 }
+
 
                 Slot moduleContainer = rootContainer.AddSlot(name, false);
                 moduleContainer.StartTask(async delegate
