@@ -15,21 +15,27 @@ Here's the [Modules.json](https://github.com/NepuShiro/AvatarModuleInjector/blob
     "URI": "",
     "ExcludeIfExists": true,
     "ScaleToUser": false,
-    "IsNameBadge": false
+    "IsNameBadge": false,
+    "IsIconBadge": false,
+    "IsLiveBadge": false
   },
   {
     "Name": "",
     "URI": "",
     "ExcludeIfExists": true,
     "ScaleToUser": false,
-    "IsNameBadge": false
+    "IsNameBadge": false,
+    "IsIconBadge": false,
+    "IsLiveBadge": false
   },
   {
     "Name": "",
     "URI": "",
     "ExcludeIfExists": true,
     "ScaleToUser": false,
-    "IsNameBadge": false
+    "IsNameBadge": false,
+    "IsIconBadge": false,
+    "IsLiveBadge": false
   }
 ]
 ```
