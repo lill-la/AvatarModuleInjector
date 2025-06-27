@@ -26,7 +26,8 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="HarmonyLib">
-			<HintPath>$(ResonitePath)MonkeyLoader\0Harmony.dll</HintPath>
+			<HintPath Condition="Exists('$(ResonitePath)MonkeyLoader')">$(ResonitePath)MonkeyLoader\0Harmony.dll</HintPath>
+			<HintPath Condition="Exists('$(ResonitePath)rml_libs')">$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="FrooxEngine">
