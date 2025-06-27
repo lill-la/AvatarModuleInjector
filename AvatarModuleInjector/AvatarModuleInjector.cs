@@ -15,11 +15,11 @@ namespace AvatarModuleInjector;
 
 public class AvatarModuleInjector : ResoniteMod
 {
-    internal const string VERSION_CONSTANT = "0.9.0";
+    internal const string VERSION_CONSTANT = "0.11.0";
     public override string Name => "AvatarModuleInjector";
     public override string Author => "lill, NepuShiro";
     public override string Version => VERSION_CONSTANT;
-    public override string Link => "https://github.com/NepuShiro/AvatarModuleInjector/";
+    public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
 
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
 
@@ -46,7 +46,7 @@ public class AvatarModuleInjector : ResoniteMod
         private static void Postfix(Component __instance)
         {
             if (__instance is not AvatarObjectSlot avatarObjSlot) return;
-            if (avatarObjSlot == null || avatarObjSlot.Slot?.ActiveUser != avatarObjSlot.LocalUser || avatarObjSlot.World.IsUserspace() || !avatarObjSlot.Slot.Name.StartsWith("User")) return;
+            if (avatarObjSlot.Slot?.ActiveUser != avatarObjSlot.LocalUser || avatarObjSlot.World.IsUserspace() || !avatarObjSlot.Slot.Name.StartsWith("User")) return;
 
             avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
             avatarObjSlot.Disposing += Worker_Disposing;
@@ -106,7 +106,7 @@ public class AvatarModuleInjector : ResoniteMod
                 }
                 else
                 {
-                    const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false\n  }\n]";
+                    const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  }\n]";
 
                     File.WriteAllText(_config.GetValue(ModuleJson), defaultModule);
                     Msg($"No modules file found at {_config.GetValue(ModuleJson)}. Created a new one with default template.");
@@ -142,10 +142,11 @@ public class AvatarModuleInjector : ResoniteMod
                 processingMarker.Tag = ProcessingMarkerTag;
 
                 AvatarManager avatarManager = avatar.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
-                bool avatarHasCustomNameBadge = avatar.GetComponentInChildren<AvatarNameTagAssigner>(a => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null
-                                                || avatar.GetComponentInChildren<AvatarBadgeManager>(a => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null
-                                                || avatar.GetComponentInChildren<AvatarLiveIndicator>(a => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
-
+                
+                bool avatarHasCustomNameBadge = avatar.GetComponentInChildren<AvatarNameTagAssigner>(a => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null;
+                bool avatarHasCustomIconBadge = avatar.GetComponentInChildren<AvatarBadgeManager>(a => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null;
+                bool avatarHasCustomLiveBadge = avatar.GetComponentInChildren<AvatarLiveIndicator>(a => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
+                
                 AvatarObjectSlot avatarObjectSlot = avatar.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
                 for (int i = 0; i < Modules.Count; i++)
                 {
@@ -156,6 +157,8 @@ public class AvatarModuleInjector : ResoniteMod
                     bool excludeIfExists = module.ExcludeIfExists;
                     bool scaleToUser = module.ScaleToUser;
                     bool isNameBadge = module.IsNameBadge;
+                    bool isIconBadge = module.IsIconBadge;
+                    bool isLiveBadge = module.IsLiveBadge;
 
                     if (uri == null)
                     {
@@ -166,6 +169,18 @@ public class AvatarModuleInjector : ResoniteMod
                     if (avatarHasCustomNameBadge && isNameBadge)
                     {
                         Msg($"InjectModules: Skipping name badge module {name} - avatar already has custom name badge");
+                        continue;
+                    }
+                    
+                    if (avatarHasCustomIconBadge && isIconBadge)
+                    {
+                        Msg($"InjectModules: Skipping icon badge module {name} - avatar already has custom icon badge");
+                        continue;
+                    }
+                    
+                    if (avatarHasCustomLiveBadge && isLiveBadge)
+                    {
+                        Msg($"InjectModules: Skipping live badge module {name} - avatar already has custom live badge");
                         continue;
                     }
 
@@ -225,16 +240,18 @@ public class AvatarModuleInjector : ResoniteMod
                             }
                         });
 
-                        if (!avatarHasCustomNameBadge && isNameBadge)
+                        avatar.RunInUpdates(5, () =>
                         {
-                            avatar.RunInUpdates(3, () =>
-                            {
+                            if (!avatarHasCustomNameBadge && isNameBadge)
                                 avatarManager.AutomaticNameBadge?.Destroy();
-                                avatarManager.AutomaticIconBadge?.Destroy();
-                                avatarManager.AutomaticLiveBadge?.Destroy();
-                            });
-                        }
 
+                            if (!avatarHasCustomIconBadge && isIconBadge)
+                                avatarManager.AutomaticIconBadge?.Destroy();
+
+                            if (!avatarHasCustomLiveBadge && isLiveBadge)
+                                avatarManager.AutomaticLiveBadge?.Destroy();
+                        });
+                        
                         Msg($"Module '{name}' Injected to {avatar.Name.GetRawString()}");
                     });
 
@@ -270,6 +287,8 @@ public class AvatarModuleInjector : ResoniteMod
         [JsonPropertyName("ExcludeIfExists")] public bool ExcludeIfExists { get; set; }
         [JsonPropertyName("ScaleToUser")] public bool ScaleToUser { get; set; }
         [JsonPropertyName("IsNameBadge")] public bool IsNameBadge { get; set; }
+        [JsonPropertyName("IsIconBadge")] public bool IsIconBadge { get; set; }
+        [JsonPropertyName("IsLiveBadge")] public bool IsLiveBadge { get; set; }
     }
 }
 
