@@ -134,16 +134,6 @@ public class AvatarModuleInjector : ResoniteMod
                     Msg("InjectModules: Processing marker already exists");
                     return;
                 }
-                if (avatarHasCustomIconBadge && isIconBadge)
-                {
-                    Msg($"InjectModules: Skipping icon badge module {name} - avatar already has custom icon badge");
-                    continue;
-                }
-                if (avatarHasCustomLiveBadge && isLiveBadge)
-                {
-                    Msg($"InjectModules: Skipping live badge module {name} - avatar already has custom live badge");
-                    continue;
-                }
 
                 Slot rootContainer = avatar.AddSlot(ContainerTag, false);
                 rootContainer.Tag = ContainerTag;
