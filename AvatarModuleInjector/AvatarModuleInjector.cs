@@ -15,11 +15,13 @@ namespace AvatarModuleInjector;
 
 public class AvatarModuleInjector : ResoniteMod
 {
-    internal const string VERSION_CONSTANT = "0.10.1";
+    internal const string VERSION_CONSTANT = "0.11.1";
     public override string Name => "AvatarModuleInjector";
     public override string Author => "lill, NepuShiro";
     public override string Version => VERSION_CONSTANT;
     public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
+    
+    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> Enabled = new ModConfigurationKey<bool>("Enabled", "Enables/Disables Injecting modules into the Avatar.", () => true);
 
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
 
@@ -46,28 +48,28 @@ public class AvatarModuleInjector : ResoniteMod
         private static void Postfix(Component __instance)
         {
             if (__instance is not AvatarObjectSlot avatarObjSlot) return;
-            if (avatarObjSlot == null || avatarObjSlot.Slot?.ActiveUser != avatarObjSlot.LocalUser || avatarObjSlot.World.IsUserspace() || !avatarObjSlot.Slot.Name.StartsWith("User")) return;
+            if (avatarObjSlot.Slot?.ActiveUser != avatarObjSlot.LocalUser || avatarObjSlot.World.IsUserspace() || !avatarObjSlot.Slot.Name.StartsWith("User")) return;
 
             avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
             avatarObjSlot.Disposing += Worker_Disposing;
-            Msg($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
+            Debug($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
         }
 
         private static void Worker_Disposing(Worker obj)
         {
             Avatars.Remove(obj.ReferenceID);
-            Msg($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
+            Debug($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
         }
 
         private static void Equipped_OnTargetChange(SyncRef<IAvatarObject> avatarObj)
         {
-            if (avatarObj?.Target?.Node != BodyNode.Root) return;
+            if (avatarObj.Target?.Node != BodyNode.Root) return;
 
             if (Avatars.TryGetValue(avatarObj.Worker.ReferenceID, out Slot oldAvatar))
             {
                 if (oldAvatar != null)
                 {
-                    Msg($"Avatar DeEquip : {oldAvatar.Name}");
+                    Debug($"Avatar DeEquip : {oldAvatar.Name}");
                     if (AvatarModuleList.TryGetValue(oldAvatar, out Slot slot))
                     {
                         oldAvatar.RunSynchronously(() => slot?.Destroy());
@@ -79,93 +81,58 @@ public class AvatarModuleInjector : ResoniteMod
             }
 
             if (avatarObj.State != ReferenceState.Available) return;
-
-            // Check if the avatar is allowed to load cloud avatars and has the necessary permissions
-            // if (avatarObj.World.RootSlot.GetComponentInChildren<CommonAvatarBuilder>()?.LoadCloudAvatars.Value is not true
-            //     || avatarObj.World.Permissions.Check(avatarObj.Target, (AvatarObjectPermissions p) => p.CanEquip(avatarObj.Target, avatarObj.World.LocalUser)))
-            // {
-            //     Msg("Equipped_OnTargetChange: Avatar not allowed to load cloud avatars or missing permissions");
-            //     return;
-            // }
-
-            Msg($"Avatar Equip : {avatarObj.Target.Slot.Name.GetRawString()}");
+            
+            Debug($"Avatar Equip : {avatarObj.Target.Slot.Name.GetRawString()}");
             avatarObj.Target.Slot.RunInUpdates(1, () => InjectModules(avatarObj.Target.Slot));
             Avatars[avatarObj.Worker.ReferenceID] = avatarObj.Target.Slot;
         }
 
         private static void InjectModules(Slot avatar)
         {
-            string moduleJsonString = null;
-
-            if (File.Exists(_config.GetValue(ModuleJson)))
+            if (!_config.GetValue(Enabled)) return;
+            
+            if (!avatar.World.CanSwapAvatar())
             {
-                moduleJsonString = File.ReadAllText(_config.GetValue(ModuleJson));
-            }
-            else
-            {
-                const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  }\n]";
-
-                File.WriteAllText(_config.GetValue(ModuleJson), defaultModule);
-                Msg($"No modules file found at {_config.GetValue(ModuleJson)}. Created a new one with default template.");
-            }
-
-            if (string.IsNullOrEmpty(moduleJsonString))
-            {
-                Msg("InjectModules: Module JSON string is null or empty");
+                Error("InjectModules: You do not have permission to swap avatars in this world.");
                 return;
             }
-
-            Modules.Clear();
-            Modules.AddRange(JsonSerializer.Deserialize<List<Module>>(moduleJsonString, new JsonSerializerOptions { AllowTrailingCommas = true }));
-            if (Modules.Count == 0)
+            
+            Slot processingMarker = null;
+            try
             {
-                Msg("InjectModules: No modules found after deserialization");
-                return;
-            }
+                string moduleJsonString = null;
 
-            List<Slot> oldMarker = avatar.GetChildrenWithTag(ProcessingMarkerTag);
-            if (oldMarker.Count != 0)
-            {
-                Msg("InjectModules: Processing marker already exists");
-                return;
-            }
-
-            Slot rootContainer = avatar.AddSlot(ContainerTag, false);
-            rootContainer.Tag = ContainerTag;
-            rootContainer.OrderOffset = long.MaxValue;
-            AvatarModuleList[avatar] = rootContainer;
-
-            Slot processingMarker = avatar.AddSlot(ProcessingMarkerTag, false);
-            processingMarker.Tag = ProcessingMarkerTag;
-
-            AvatarManager avatarManager = avatar.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
-            bool avatarHasCustomNameBadge = avatar.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null;
-            bool avatarHasCustomIconBadge = avatar.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null;
-            bool avatarHasCustomLiveBadge = avatar.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
-
-            AvatarObjectSlot avatarObjectSlot = avatar.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
-            for (int i = 0; i < Modules.Count; i++)
-            {
-                Module module = Modules[i];
-
-                string name = string.IsNullOrEmpty(module.Name) ? $"__AMI_MODULE_{i}" : module.Name;
-                Uri uri = string.IsNullOrEmpty(module.Uri) ? null : new Uri(module.Uri);
-                bool excludeIfExists = module.ExcludeIfExists;
-                bool scaleToUser = module.ScaleToUser;
-                bool isNameBadge = module.IsNameBadge;
-                bool isIconBadge = module.IsIconBadge;
-                bool isLiveBadge = module.IsLiveBadge;
-
-                if (uri == null)
+                if (File.Exists(_config.GetValue(ModuleJson)))
                 {
-                    Msg($"InjectModules: Skipping module {name} - URI is null");
-                    continue;
+                    moduleJsonString = File.ReadAllText(_config.GetValue(ModuleJson));
                 }
-        
-                if (avatarHasCustomNameBadge && isNameBadge)
+                else
                 {
-                    Msg($"InjectModules: Skipping name badge module {name} - avatar already has custom name badge");
-                    continue;
+                    const string defaultModule = "[\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  },\n  {\n    \"Name\": \"\",\n    \"URI\": \"\",\n    \"ExcludeIfExists\": false,\n    \"ScaleToUser\": false,\n    \"IsNameBadge\": false,\n    \"IsIconBadge\": false,\n    \"IsLiveBadge\": false\n  }\n]";
+
+                    File.WriteAllText(_config.GetValue(ModuleJson), defaultModule);
+                    Msg($"No modules file found at {_config.GetValue(ModuleJson)}. Created a new one with default template.");
+                }
+
+                if (string.IsNullOrEmpty(moduleJsonString))
+                {
+                    Msg("InjectModules: Module JSON string is null or empty");
+                    return;
+                }
+
+                Modules.Clear();
+                Modules.AddRange(JsonSerializer.Deserialize<List<Module>>(moduleJsonString, new JsonSerializerOptions { AllowTrailingCommas = true }));
+                if (Modules.Count == 0)
+                {
+                    Msg("InjectModules: No modules found after deserialization");
+                    return;
+                }
+
+                List<Slot> oldMarker = avatar.GetChildrenWithTag(ProcessingMarkerTag);
+                if (oldMarker.Count != 0)
+                {
+                    Msg("InjectModules: Processing marker already exists");
+                    return;
                 }
                 if (avatarHasCustomIconBadge && isIconBadge)
                 {
@@ -178,83 +145,149 @@ public class AvatarModuleInjector : ResoniteMod
                     continue;
                 }
 
-                if (excludeIfExists)
+                Slot rootContainer = avatar.AddSlot(ContainerTag, false);
+                rootContainer.Tag = ContainerTag;
+                rootContainer.OrderOffset = long.MaxValue;
+                AvatarModuleList[avatar] = rootContainer;
+
+                processingMarker = avatar.AddSlot(ProcessingMarkerTag, false);
+                processingMarker.Tag = ProcessingMarkerTag;
+
+                AvatarManager avatarManager = avatar.LocalUser.Root.GetRegisteredComponent<AvatarManager>();
+                
+                bool avatarHasCustomNameBadge = avatar.GetComponentInChildren<AvatarNameTagAssigner>(a => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null;
+                bool avatarHasCustomIconBadge = avatar.GetComponentInChildren<AvatarBadgeManager>(a => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null;
+                bool avatarHasCustomLiveBadge = avatar.GetComponentInChildren<AvatarLiveIndicator>(a => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
+                
+                AvatarObjectSlot avatarObjectSlot = avatar.LocalUser.Root.GetRegisteredComponent<AvatarObjectSlot>();
+                for (int i = 0; i < Modules.Count; i++)
                 {
-                    bool found = false;
+                    Module module = Modules[i];
 
-                    avatar.ForeachChild(c =>
-                    {
-                        if (c.Name.GetRawString().Equals(module.Name.GetRawString(), StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            found = true;
-                        }
-                    });
+                    string name = string.IsNullOrEmpty(module.Name) ? $"__AMI_MODULE_{i}" : module.Name;
+                    Uri uri = string.IsNullOrEmpty(module.Uri) ? null : new Uri(module.Uri);
+                    bool excludeIfExists = module.ExcludeIfExists;
+                    bool scaleToUser = module.ScaleToUser;
+                    bool isNameBadge = module.IsNameBadge;
+                    bool isIconBadge = module.IsIconBadge;
+                    bool isLiveBadge = module.IsLiveBadge;
 
-                    if (found)
+                    if (uri == null)
                     {
-                        Msg($"InjectModules: Skipping module {name} - already exists");
+                        Msg($"InjectModules: Skipping module {name} - URI is null");
                         continue;
                     }
-                }
 
-
-                Slot moduleContainer = rootContainer.AddSlot(name, false);
-                moduleContainer.StartTask(async delegate
-                {
-                    Slot moduleRoot = moduleContainer.AddSlot("TempSlot", false);
-                    await moduleRoot.LoadObjectAsync(uri);
-                    moduleRoot.GetComponent<InventoryItem>()?.Unpack();
-
-                    foreach (Slot child in moduleContainer.Children)
+                    if (avatarHasCustomNameBadge && isNameBadge)
                     {
-                        child.SetIdentityTransform();
-                        if (scaleToUser) child.ScaleToUser(avatar.LocalUser);
+                        Msg($"InjectModules: Skipping name badge module {name} - avatar already has custom name badge");
+                        continue;
+                    }
+                    
+                    if (avatarHasCustomIconBadge && isIconBadge)
+                    {
+                        Msg($"InjectModules: Skipping icon badge module {name} - avatar already has custom icon badge");
+                        continue;
+                    }
+                    
+                    if (avatarHasCustomLiveBadge && isLiveBadge)
+                    {
+                        Msg($"InjectModules: Skipping live badge module {name} - avatar already has custom live badge");
+                        continue;
                     }
 
-                    AvatarObjectSlot.ForeachObjectComponent(moduleContainer, avatarObjectComponent =>
+                    if (excludeIfExists)
                     {
-                        try
+                        bool found = false;
+
+                        avatar.ForeachChild(c =>
                         {
-                            avatarObjectComponent.OnPreEquip(avatarObjectSlot);
-                        }
-                        catch (Exception e)
+                            if (c.Name.GetRawString().Equals(module.Name.GetRawString(), StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                found = true;
+                            }
+                        });
+
+                        if (found)
                         {
-                            Msg($"Exception in OnPreEquip on {moduleContainer.Name}\n" + e.Message);
+                            Msg($"InjectModules: Skipping module {name} - already exists");
+                            continue;
                         }
+                    }
+
+                    Slot moduleContainer = rootContainer.AddSlot(name, false);
+                    moduleContainer.StartTask(async () =>
+                    {
+                        Slot moduleRoot = moduleContainer.AddSlot("TempSlot", false);
+                        await moduleRoot.LoadObjectAsync(uri);
+                        moduleRoot.GetComponent<InventoryItem>()?.Unpack();
+
+                        foreach (Slot child in moduleContainer.Children)
+                        {
+                            child.SetIdentityTransform();
+                            if (scaleToUser) child.ScaleToUser(avatar.LocalUser);
+                        }
+
+                        AvatarObjectSlot.ForeachObjectComponent(moduleContainer, avatarObjectComponent =>
+                        {
+                            try
+                            {
+                                avatarObjectComponent.OnPreEquip(avatarObjectSlot);
+                            }
+                            catch (Exception e)
+                            {
+                                Msg($"Exception in OnPreEquip on {moduleContainer.Name}\n" + e.Message);
+                            }
+                        });
+
+                        AvatarObjectSlot.ForeachObjectComponent(moduleContainer, avatarObjectComponent =>
+                        {
+                            try
+                            {
+                                avatarObjectComponent.OnEquip(avatarObjectSlot);
+                            }
+                            catch (Exception e)
+                            {
+                                Msg($"Exception in OnEquip on {moduleContainer.Name}\n" + e.Message);
+                            }
+                        });
+
+                        avatar.RunInUpdates(5, () =>
+                        {
+                            if (!avatarHasCustomNameBadge && isNameBadge)
+                                avatarManager.AutomaticNameBadge?.Destroy();
+
+                            if (!avatarHasCustomIconBadge && isIconBadge)
+                                avatarManager.AutomaticIconBadge?.Destroy();
+
+                            if (!avatarHasCustomLiveBadge && isLiveBadge)
+                                avatarManager.AutomaticLiveBadge?.Destroy();
+                        });
+                        
+                        Msg($"Module '{name}' Injected to {avatar.Name.GetRawString()}");
                     });
 
-                    AvatarObjectSlot.ForeachObjectComponent(moduleContainer, avatarObjectComponent =>
+                    avatar.RunInUpdates(2, () =>
                     {
-                        try
+                        List<Slot> markers = avatar.GetChildrenWithTag(ProcessingMarkerTag);
+                        foreach (Slot marker in markers)
                         {
-                            avatarObjectComponent.OnEquip(avatarObjectSlot);
-                        }
-                        catch (Exception e)
-                        {
-                            Msg($"Exception in OnEquip on {moduleContainer.Name}\n" + e.Message);
+                            marker.Destroy();
                         }
                     });
-
-                    Msg($"Module '{name}' Injected to {avatar.Name.GetRawString()}");
-                });
-            }
-
-            avatar.RunInUpdates(2, delegate
-            {
-                bool hasCustomNameTag = rootContainer.GetComponentInChildren((AvatarNameTagAssigner a) => a.Slot != avatarManager.AutomaticNameBadge && !a.Slot.IsUnderView()) != null;
-                bool hasCustomIconBadge = rootContainer.GetComponentInChildren((AvatarBadgeManager a) => a.Slot != avatarManager.AutomaticIconBadge && !a.Slot.IsUnderView()) != null;
-                bool hasCustomLiveBadge = rootContainer.GetComponentInChildren((AvatarLiveIndicator a) => a.Slot != avatarManager.AutomaticLiveBadge && !a.Slot.IsUnderView()) != null;
-
-                if (hasCustomNameTag) avatarManager.AutomaticNameBadge?.Destroy();
-                if (hasCustomIconBadge) avatarManager.AutomaticIconBadge?.Destroy();
-                if (hasCustomLiveBadge) avatarManager.AutomaticLiveBadge?.Destroy();
-
-                List<Slot> markers = avatar.GetChildrenWithTag(ProcessingMarkerTag);
-                foreach (Slot marker in markers)
-                {
-                    marker.Destroy();
                 }
-            });
+            }
+            catch (Exception e)
+            {
+                if (processingMarker != null)
+                {
+                    processingMarker.Name += "_ERROR";
+                    Comment comment = processingMarker.GetComponentOrAttach<Comment>();
+                    comment.Text.Value = e.Message;
+                }
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 
