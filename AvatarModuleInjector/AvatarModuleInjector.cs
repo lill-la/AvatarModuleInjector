@@ -20,6 +20,8 @@ public class AvatarModuleInjector : ResoniteMod
     public override string Author => "lill, NepuShiro";
     public override string Version => VERSION_CONSTANT;
     public override string Link => "https://github.com/lill-la/AvatarModuleInjector/";
+    
+    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> Enabled = new ModConfigurationKey<bool>("Enabled", "Enables/Disables Injecting modules into the Avatar.", () => true);
 
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
 
@@ -50,24 +52,24 @@ public class AvatarModuleInjector : ResoniteMod
 
             avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
             avatarObjSlot.Disposing += Worker_Disposing;
-            Msg($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
+            Debug($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
         }
 
         private static void Worker_Disposing(Worker obj)
         {
             Avatars.Remove(obj.ReferenceID);
-            Msg($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
+            Debug($"Dispose AvatarObjectSlot. RefID: {obj.ReferenceID}");
         }
 
         private static void Equipped_OnTargetChange(SyncRef<IAvatarObject> avatarObj)
         {
-            if (avatarObj?.Target?.Node != BodyNode.Root) return;
+            if (avatarObj.Target?.Node != BodyNode.Root) return;
 
             if (Avatars.TryGetValue(avatarObj.Worker.ReferenceID, out Slot oldAvatar))
             {
                 if (oldAvatar != null)
                 {
-                    Msg($"Avatar DeEquip : {oldAvatar.Name}");
+                    Debug($"Avatar DeEquip : {oldAvatar.Name}");
                     if (AvatarModuleList.TryGetValue(oldAvatar, out Slot slot))
                     {
                         oldAvatar.RunSynchronously(() => slot?.Destroy());
@@ -79,22 +81,22 @@ public class AvatarModuleInjector : ResoniteMod
             }
 
             if (avatarObj.State != ReferenceState.Available) return;
-
-            // Check if the avatar is allowed to load cloud avatars and has the necessary permissions
-            // if (avatarObj.World.RootSlot.GetComponentInChildren<CommonAvatarBuilder>()?.LoadCloudAvatars.Value is not true
-            //     || avatarObj.World.Permissions.Check(avatarObj.Target, (AvatarObjectPermissions p) => p.CanEquip(avatarObj.Target, avatarObj.World.LocalUser)))
-            // {
-            //     Msg("Equipped_OnTargetChange: Avatar not allowed to load cloud avatars or missing permissions");
-            //     return;
-            // }
-
-            Msg($"Avatar Equip : {avatarObj.Target.Slot.Name.GetRawString()}");
+            
+            Debug($"Avatar Equip : {avatarObj.Target.Slot.Name.GetRawString()}");
             avatarObj.Target.Slot.RunInUpdates(1, () => InjectModules(avatarObj.Target.Slot));
             Avatars[avatarObj.Worker.ReferenceID] = avatarObj.Target.Slot;
         }
 
         private static void InjectModules(Slot avatar)
         {
+            if (!_config.GetValue(Enabled)) return;
+            
+            if (!avatar.World.CanSwapAvatar())
+            {
+                Error("InjectModules: You do not have permission to swap avatars in this world.");
+                return;
+            }
+            
             Slot processingMarker = null;
             try
             {
