@@ -10,6 +10,7 @@ using ResoniteModLoader;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Elements.Assets;
+using Renderite.Shared;
 
 namespace AvatarModuleInjector;
 
@@ -35,8 +36,8 @@ public class AvatarModuleInjector : ResoniteMod
         harmony.PatchAll();
     }
 
-    [HarmonyPatch(typeof(ComponentBase<Component>), "OnStart")]
-    private class ComponentBaseOnStartPatch
+    [HarmonyPatch(typeof(AvatarObjectSlot), "OnAwake")]
+    private class AvatarObjectSlotOnAwakePatch
     {
         private static readonly Dictionary<RefID, Slot> Avatars = new Dictionary<RefID, Slot>();
         private static readonly List<Module> Modules = new List<Module>();
@@ -45,14 +46,13 @@ public class AvatarModuleInjector : ResoniteMod
         private const string ProcessingMarkerTag = "__AMI_PROCESSING_MARKER";
         private const string ContainerTag = "__AMI_CONTAINER";
 
-        private static void Postfix(Component __instance)
+        private static void Postfix(AvatarObjectSlot __instance)
         {
-            if (__instance is not AvatarObjectSlot avatarObjSlot) return;
-            if (avatarObjSlot.Slot?.ActiveUser != avatarObjSlot.LocalUser || avatarObjSlot.World.IsUserspace() || !avatarObjSlot.Slot.Name.StartsWith("User")) return;
+            if (__instance.Slot?.ActiveUser != __instance.LocalUser || __instance.World.IsUserspace() || !__instance.Slot.Name.StartsWith("User")) return;
 
-            avatarObjSlot.Equipped.OnTargetChange += Equipped_OnTargetChange;
-            avatarObjSlot.Disposing += Worker_Disposing;
-            Debug($"Found AvatarObjectSlot. RefID: {avatarObjSlot.ReferenceID}");
+            __instance.Equipped.OnTargetChange += Equipped_OnTargetChange;
+            __instance.Disposing += Worker_Disposing;
+            Debug($"Found AvatarObjectSlot. RefID: {__instance.ReferenceID}");
         }
 
         private static void Worker_Disposing(Worker obj)
