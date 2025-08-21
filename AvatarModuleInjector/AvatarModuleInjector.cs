@@ -24,7 +24,7 @@ public class AvatarModuleInjector : ResoniteMod
     
     [AutoRegisterConfigKey] private static readonly ModConfigurationKey<bool> Enabled = new ModConfigurationKey<bool>("Enabled", "Enables/Disables Injecting modules into the Avatar.", () => true);
 
-    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "Modules.json");
+    [AutoRegisterConfigKey] private static readonly ModConfigurationKey<string> ModuleJson = new ModConfigurationKey<string>("Module Json", "The path to a JSON file containing an array of modules to inject into avatars.", () => "rml_config/AvatarModuleInjector_Modules.json");
 
     private static ModConfiguration _config;
 
