@@ -48,7 +48,8 @@ public class AvatarModuleInjector : ResoniteMod
 
         private static void Postfix(AvatarObjectSlot __instance)
         {
-            if (__instance.Slot?.ActiveUser != __instance.LocalUser || __instance.World.IsUserspace() || !__instance.Slot.Name.StartsWith("User")) return;
+            if (__instance.Slot.ActiveUser != __instance.LocalUser) return;
+            if(__instance.World.IsUserspace()) return;
 
             __instance.Equipped.OnTargetChange += Equipped_OnTargetChange;
             __instance.Disposing += Worker_Disposing;
@@ -64,6 +65,7 @@ public class AvatarModuleInjector : ResoniteMod
         private static void Equipped_OnTargetChange(SyncRef<IAvatarObject> avatarObj)
         {
             if (avatarObj.Target?.Node != BodyNode.Root) return;
+            if (!avatarObj.Slot.Name.StartsWith("User")) return;
 
             if (Avatars.TryGetValue(avatarObj.Worker.ReferenceID, out Slot oldAvatar))
             {
