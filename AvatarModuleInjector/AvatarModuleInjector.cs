@@ -16,7 +16,7 @@ namespace AvatarModuleInjector;
 
 public class AvatarModuleInjector : ResoniteMod
 {
-    internal const string VERSION_CONSTANT = "0.12.1";
+    internal const string VERSION_CONSTANT = "0.12.2";
     public override string Name => "AvatarModuleInjector";
     public override string Author => "lill, NepuShiro";
     public override string Version => VERSION_CONSTANT;
